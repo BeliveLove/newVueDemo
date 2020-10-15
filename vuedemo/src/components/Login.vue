@@ -32,6 +32,7 @@
             type="primary"
             @click="onSubmit('ruleForm')"
             style="text-align: center"
+            :loading="Flag"
             >登录</el-button
           >
         </el-form>
@@ -40,6 +41,7 @@
   </div>
 </template>
 <script>
+import jquery from 'jquery'
 export default {
   data () {
     return {
@@ -48,6 +50,11 @@ export default {
         name: '',
         region: '',
       },
+      subData: {
+        userName: 'admin',
+        password: '123456'
+      },
+      Flag: false,
       rules: {
         pass: [
           { validator: validatePass, trigger: 'blur' }
@@ -81,10 +88,33 @@ export default {
   },
   methods: {
     onSubmit (formName) {
+      this.Flag = true
       console.log(formName);
-      this.$refs[formName].validate((valid) => {
+      this.$refs.ruleForm.validate((valid) => {
+        console.log(valid);
         if (valid) {
-          alert('submit!');
+
+          jquery.ajax({
+            url: 'http://192.168.3.77:3000/api/demo/login',
+            method: 'post',
+            data: this.subData,
+            dataType: 'json',
+            success: (data) => {
+              console.log(data);
+              if (data.status == 200) {
+                this.$message({
+                  type: 'success',
+                  message: '登录成功'
+                })
+                this.$router.push({ name: 'main', params: {} })
+              }else{
+                  this.$message({
+                  type: 'error',
+                  message: '登陆失败'
+                })
+              }
+            }
+          })
         } else {
           console.log('error submit!!');
           return false;
@@ -124,10 +154,10 @@ export default {
 我的解决方式是   重写.el-form-item__content ，并且添加margin-right: 80px;
 */
 .el-form-item__content {
-    line-height: 40px;
-    position: relative;
-    font-size: 14px;
-    margin-left: 80px;
-    margin-right: 80px;
+  line-height: 40px;
+  position: relative;
+  font-size: 14px;
+  margin-left: 80px;
+  margin-right: 80px;
 }
 </style>
