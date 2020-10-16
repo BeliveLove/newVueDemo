@@ -33,13 +33,22 @@
     </div>
     <div class="button">
       <el-button-group>
-        <el-button type="primary" icon="el-icon-circle-plus">新增</el-button>
-        <el-button type="primary" icon="el-icon-edit">编辑</el-button>
+        <el-button type="primary" icon="el-icon-circle-plus" @click="addDate"
+          >新增</el-button
+        >
+        <el-button type="primary" icon="el-icon-edit" @click="editData"
+          >编辑</el-button
+        >
         <el-button type="primary" icon="el-icon-remove">删除</el-button>
       </el-button-group>
     </div>
     <div class="table">
-      <el-table :data="tableData" border>
+      <el-table
+        :data="tableData"
+        border
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column type="selection" width="55"> </el-table-column>
         <el-table-column prop="account" label="account"> </el-table-column>
         <el-table-column prop="email" label="email"> </el-table-column>
         <el-table-column prop="gender" label="gender"> </el-table-column>
@@ -76,6 +85,69 @@
       >
       </el-pagination>
     </div>
+    <el-dialog title="信息" :visible.sync="dialogFormVisible" width="60%">
+      <el-form :model="formData" label-width="120px">
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="account">
+              <el-input
+                v-model="formData.account"
+                autocomplete="off"
+              ></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="email">
+              <el-input v-model="formData.email" autocomplete="off"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="gender">
+              <el-input v-model="formData.gender" autocomplete="off"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="id">
+              <el-input v-model="formData.id" autocomplete="off"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="idCard">
+              <el-input v-model="formData.idCard" autocomplete="off"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="name">
+              <el-input v-model="formData.name" autocomplete="off"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="phone">
+              <el-input v-model="formData.phone" autocomplete="off"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="role" style="width: 100%">
+              <el-select v-model="formData.role" placeholder="role">
+                <el-option label="管理员" value="1"></el-option>
+                <el-option label="司机" value="2"></el-option>
+                <el-option label="店长" value="3"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addFormDate">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -83,12 +155,22 @@ import $ from 'jquery'
 export default {
   data () {
     return {
+      dialogFormVisible: false,
       formInline: {
         userName: '',
         userAccount: '',
         role: ''
-      }
-      ,
+      },
+      formData: {
+        account: '',
+        email: '',
+        gender: '',
+        id: '',
+        idCard: '',
+        name: '',
+        phone: '',
+        role: ''
+      },
       tableData: [
         {
           account: '',
@@ -104,13 +186,51 @@ export default {
         pageIndex: 1,
         pageSize: 3,
         total: 0
-      }
+      },
+      editSize: 0
     }
   },
   mounted () {
+
     this.seacher();
   },
   methods: {
+    handleSelectionChange (val) {
+      this.editSize = val.length;
+      console.log(this.editSize);
+      this.formData = Object.assign({}, val[0]);
+    },
+    editData () {
+      if (this.editSize === 0 || this.editSize > 1) {
+        this.$message({
+          type: 'error',
+          message: '仅支持修改一条数据'
+        })
+        return;
+      } else {
+        this.dialogFormVisible = true
+      }
+
+    },
+    addFormDate () {
+      console.log(this.tableData);
+      this.tableData.push(this.formData)
+      this.dialogFormVisible = false
+    },
+    addDate () {
+      //初始化
+      this.formData = {
+        account: '',
+        email: '',
+        gender: '',
+        id: '',
+        idCard: '',
+        name: '',
+        phone: '',
+        role: ''
+      }
+      this.dialogFormVisible = true
+    },
     fetch () {
       this.pageInfo.pageIndex = 1
     },
